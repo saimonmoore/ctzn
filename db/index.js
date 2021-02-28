@@ -27,10 +27,10 @@ export let privateServerDb = undefined
 export let publicUserDbs = new CaseInsensitiveMap()
 export let privateUserDbs = new CaseInsensitiveMap()
 
-export async function setup ({configDir, hyperspaceHost, hyperspaceStorage, simulateHyperspace}) {
+export async function setup ({configDir, hyperspaceHost, hyperspaceStorage, simulateHyperspace}, extensions) {
   await hyperspace.setup({hyperspaceHost, hyperspaceStorage, simulateHyperspace})
-  await schemas.setup()
-  
+  await schemas.setup(extensions)
+
   _configDir = configDir
   configPath = path.join(configDir, 'dbconfig.json')
   await readDbConfig()

@@ -44,17 +44,7 @@ export async function start (opts) {
 
   //load extensions
   const extensions = config.extensions.split(',') || [];
-  const extensionModules = await Promise.all(extensions.map(async (extension) => {
-    try {
-      console.log("[loading extension] ==========> ", {extension})
-      const extensionModule = await import(extension);
-      console.log("[loaded extension] ==========> ", {extensionModule})
-      return extensionModule;
-    } catch(err) {
-      console.error("[error loading extension] ==========> ", {err})
-      return;
-    }
-  }));
+  const extensionModules = await Promise.all(extensions.map(async (extension) => await import(extension)));
 
   // Extension needs to expose:
   //  - app: express middleware to integrate express app extensions
@@ -313,7 +303,7 @@ export async function start (opts) {
   })
 
   await email.setup(config)
-  await db.setup(config)
+  await db.setup(config, extensionModules)
 
   // process.on('SIGINT', close)
   // process.on('SIGTERM', close)
