@@ -42,6 +42,26 @@ export async function start (opts) {
   app.set('view engine', 'ejs')
   app.use(cors())
 
+  //load extensions
+  const extensions = config.extensions.split(',') || [];
+  const extensionModules = await Promise.all(extensions.map(async (extension) => {
+    try {
+      console.log("[loading extension] ==========> ", {extension})
+      const extensionModule = await import(extension);
+      console.log("[loaded extension] ==========> ", {extensionModule})
+      return extensionModule;
+    } catch(err) {
+      console.error("[error loading extension] ==========> ", {err})
+      return;
+    }
+  }));
+
+  // Extension needs to expose:
+  //  - app: express middleware to integrate express app extensions
+  //  - api: rpc websocket api extensions
+  //  - schemas: add to setup of core schemas
+  //  - db: add to setup of core db lib
+
   app.get('/', (req, res) => {
     res.render('index')
   })
