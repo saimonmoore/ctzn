@@ -35,7 +35,7 @@ export class PublicCitizenDB extends BaseHyperbeeDB {
     })
 
     if (this.extensions) {
-      const publicCitizenDbExtensions = Array.from(this.extensions).map((extension) => Object.values(extension.default.publicCitizenDbExtension)).flat().filter(Boolean)
+      const publicCitizenDbExtensions = Array.from(this.extensions).map((extension) => Object.values(extension.default.publicCitizenDbExtensions)).flat().filter(Boolean)
       for (let dbExtension of publicCitizenDbExtensions) {
         dbExtension.setup(this)
       }
@@ -259,7 +259,7 @@ export class PrivateCitizenDB extends BaseHyperbeeDB {
     })
 
     if (this.extensions) {
-      const privateCitizenDbExtensions = Array.from(this.extensions).map((extension) => Object.values(extension.default.privateCitizenDbExtension)).flat().filter(Boolean)
+      const privateCitizenDbExtensions = Array.from(this.extensions).map((extension) => Object.values(extension.default.privateCitizenDbExtensions)).flat().filter(Boolean)
       for (let dbExtension of privateCitizenDbExtensions) {
         dbExtension.setup(this, { constructEntryUrl, perf, fetchUserId, mlts })
       }

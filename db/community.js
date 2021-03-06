@@ -263,7 +263,7 @@ export class PublicCommunityDB extends BaseHyperbeeDB {
 
 
     if (this.extensions) {
-      const publicCommunityDbExtensions = Array.from(this.extensions).map((extension) => Object.values(extension.default.publicCommunityDbExtension)).flat().filter(Boolean)
+      const publicCommunityDbExtensions = Array.from(this.extensions).map((extension) => Object.values(extension.default.publicCommunityDbExtensions)).flat().filter(Boolean)
       for (let dbExtension of publicCommunityDbExtensions) {
         dbExtension.setup(this, { dbGet, constructEntryUrl, parseEntryUrl, hyperUrlToKeyStr, perf, fetchUserId, mlts })
       }

@@ -47,10 +47,11 @@ export async function start (opts) {
   const extensionModules = await Promise.all(extensions.map(async (extension) => await import(extension)));
 
   // Extension needs to expose:
-  //  - app: express middleware to integrate express app extensions
-  //  - api: rpc websocket api extensions
+  //  - apiExtensions: rpc websocket api extensions
   //  - schemas: add to setup of core schemas
-  //  - db: add to setup of core db lib
+  //  - privateCitizenDbExtensions: add to PrivateCitizenDB
+  //  - publicCitizenDbExtensions: add to PublicCitizenDB
+  //  - publicCommunityDbExtensions: add to PublicCommunityDB
 
   app.get('/', (req, res) => {
     res.render('index')
@@ -146,7 +147,7 @@ export async function start (opts) {
           return res.sendFile(DEFAULT_USER_AVATAR_PATH)
         }
       }
-      
+
       const ptr = await userDb.blobs.getPointer('avatar')
       const etag = `W/block-${ptr.start}`
       if (req.headers['if-none-match'] === etag) {
@@ -267,7 +268,7 @@ export async function start (opts) {
     try {
       const db = getDb(req.params.username)
       const table = db.tables[`${req.params.schemaNs}/${req.params.schemaName}`]
-      if (!table) throw new Error('User table not found')     
+      if (!table) throw new Error('User table not found')
       res.status(200).json(await table.list(getListOpts(req)))
     } catch (e) {
       json404(res, e)
@@ -290,7 +291,7 @@ export async function start (opts) {
   })
 
   const wsServer = new WebSocketServer({noServer: true})
-  api.setup(wsServer, config)
+  api.setup(wsServer, config, extensionModules)
 
   const server = new http.Server(app)
   server.on('upgrade', (request, socket, head) => {

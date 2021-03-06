@@ -10,7 +10,7 @@ import * as server from './server.js'
 import * as users from './users.js'
 import * as votes from './votes.js'
 
-export function setup (wsServer, config) {
+export function setup (wsServer, config, extensions) {
   const origRegister = wsServer.register
   wsServer.register = function (methodName, methodHandler) {
     origRegister.call(this, methodName, async (params, socket_id) => {
@@ -47,4 +47,11 @@ export function setup (wsServer, config) {
   server.setup(wsServer, config)
   users.setup(wsServer, config)
   votes.setup(wsServer, config)
+
+  if (extensions) {
+    const apiExtensions = Array.from(extensions).map((extension) => Object.values(extension.default.apiExtensions)).flat().filter(Boolean)
+    for (let apiExtension of apiExtensions) {
+      apiExtension.setup(wsServer, config)
+    }
+  }
 }
