@@ -7,9 +7,10 @@ import * as perf from '../lib/perf.js'
 const mlts = createMlts()
 
 export class PublicCitizenDB extends BaseHyperbeeDB {
-  constructor (userId, key) {
+  constructor (userId, key, extensions) {
     super(`public:${userId}`, key)
     this.userId = userId
+    this.extensions = extensions
   }
 
   get dbType () {
@@ -32,15 +33,23 @@ export class PublicCitizenDB extends BaseHyperbeeDB {
     this.memberships.onDel(() => {
       this.emit('subscriptions-changed')
     })
+
+    if (this.extensions) {
+      const publicCitizenDbExtensions = Array.from(this.extensions).map((extension) => Object.values(extension.default.publicCitizenDbExtension)).flat().filter(Boolean)
+      for (let dbExtension of publicCitizenDbExtensions) {
+        dbExtension.setup(this)
+      }
+    }
   }
 }
 
 export class PrivateCitizenDB extends BaseHyperbeeDB {
-  constructor (userId, key, publicServerDb, publicUserDb) {
+  constructor (userId, key, publicServerDb, publicUserDb, extensions) {
     super(`private:${userId}`, key, {isPrivate: true})
     this.userId = userId
     this.publicServerDb = publicServerDb
     this.publicUserDb = publicUserDb
+    this.extensions = extensions
   }
 
   get dbType () {
@@ -97,7 +106,7 @@ export class PrivateCitizenDB extends BaseHyperbeeDB {
             itemCreatedAt = new Date(change.value.createdAt)
             break
         }
-        
+
         const createdAt = new Date()
         await this.notificationsIdx.put(mlts(Math.min(createdAt, itemCreatedAt || createdAt)), {
           itemUrl: constructEntryUrl(db.url, change.keyParsed.schemaId, change.keyParsed.key),
@@ -233,7 +242,7 @@ export class PrivateCitizenDB extends BaseHyperbeeDB {
         if (upvoteUrlIndex !== -1) votesIdxEntry.value.upvoteUrls.splice(upvoteUrlIndex, 1)
         let downvoteUrlIndex = votesIdxEntry.value.downvoteUrls.indexOf(voteUrl)
         if (downvoteUrlIndex !== -1) votesIdxEntry.value.downvoteUrls.splice(downvoteUrlIndex, 1)
-  
+
         if (change.value) {
           if (change.value.vote === 1) {
             votesIdxEntry.value.upvoteUrls.push(voteUrl)
@@ -241,13 +250,20 @@ export class PrivateCitizenDB extends BaseHyperbeeDB {
             votesIdxEntry.value.downvoteUrls.push(voteUrl)
           }
         }
-  
+
         await this.votesIdx.put(votesIdxEntry.key, votesIdxEntry.value)
       } finally {
         release()
         pend()
       }
     })
+
+    if (this.extensions) {
+      const privateCitizenDbExtensions = Array.from(this.extensions).map((extension) => Object.values(extension.default.privateCitizenDbExtension)).flat().filter(Boolean)
+      for (let dbExtension of privateCitizenDbExtensions) {
+        dbExtension.setup(this, { constructEntryUrl, perf, fetchUserId, mlts })
+      }
+    }
   }
 
   async getSubscribedDbUrls () {

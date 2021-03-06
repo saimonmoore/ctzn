@@ -7,9 +7,10 @@ import * as perf from '../lib/perf.js'
 const mlts = createMlts()
 
 export class PublicCommunityDB extends BaseHyperbeeDB {
-  constructor (userId, key) {
+  constructor (userId, key, extensions) {
     super(`public:${userId}`, key)
     this.userId = userId
+    this.extensions = extensions
   }
 
   get dbType () {
@@ -99,7 +100,7 @@ export class PublicCommunityDB extends BaseHyperbeeDB {
         pend()
       }
     })
-    
+
     this.createIndexer('ctzn.network/feed-idx', ['ctzn.network/post'], async (db, change) => {
       if (!change.value) return // ignore deletes
       const community = change.value.community
@@ -244,7 +245,7 @@ export class PublicCommunityDB extends BaseHyperbeeDB {
         if (upvoteUrlIndex !== -1) votesIdxEntry.value.upvoteUrls.splice(upvoteUrlIndex, 1)
         let downvoteUrlIndex = votesIdxEntry.value.downvoteUrls.indexOf(voteUrl)
         if (downvoteUrlIndex !== -1) votesIdxEntry.value.downvoteUrls.splice(downvoteUrlIndex, 1)
-  
+
         if (change.value) {
           if (change.value.vote === 1) {
             votesIdxEntry.value.upvoteUrls.push(voteUrl)
@@ -252,13 +253,21 @@ export class PublicCommunityDB extends BaseHyperbeeDB {
             votesIdxEntry.value.downvoteUrls.push(voteUrl)
           }
         }
-  
+
         await this.votesIdx.put(votesIdxEntry.key, votesIdxEntry.value)
       } finally {
         release()
         pend()
       }
     })
+
+
+    if (this.extensions) {
+      const publicCommunityDbExtensions = Array.from(this.extensions).map((extension) => Object.values(extension.default.publicCommunityDbExtension)).flat().filter(Boolean)
+      for (let dbExtension of publicCommunityDbExtensions) {
+        dbExtension.setup(this, { dbGet, constructEntryUrl, parseEntryUrl, hyperUrlToKeyStr, perf, fetchUserId, mlts })
+      }
+    }
   }
 
   async getSubscribedDbUrls () {
