@@ -16,8 +16,11 @@ import { fileURLToPath } from 'url'
 import * as os from 'os'
 import stringHelpers from './lib/strings.js'
 import * as dbGetters from './db/getters.js'
+import * as dbHelpers from './db/util.js'
 import testHelpers from './tests/_util.js'
 import * as schemaHelpers from './lib/schemas.js'
+import * as networkHelpers from './lib/network.js'
+import * as errors from './lib/errors.js'
 
 const { setOrigin, getDomain, parseAcctUrl, usernameToUserId, constructUserUrl, DEBUG_MODE_PORTS_MAP } = stringHelpers;
 
@@ -372,5 +375,8 @@ export {
   email,
   config,
   getDb,
-  schemaHelpers
+  dbHelpers,
+  schemaHelpers,
+  networkHelpers,
+  errors
 }
