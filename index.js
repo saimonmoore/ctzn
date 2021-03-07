@@ -14,8 +14,11 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { fileURLToPath } from 'url'
 import * as os from 'os'
-import { setOrigin, getDomain, parseAcctUrl, usernameToUserId, constructUserUrl, DEBUG_MODE_PORTS_MAP } from './lib/strings.js'
+import stringHelpers from './lib/strings.js'
 import * as dbGetters from './db/getters.js'
+import testHelpers from './tests/_util.js'
+
+const { setOrigin, getDomain, parseAcctUrl, usernameToUserId, constructUserUrl, DEBUG_MODE_PORTS_MAP } = stringHelpers;
 
 const PACKAGE_JSON_PATH = path.join(path.dirname(fileURLToPath(import.meta.url)), 'package.json')
 const PACKAGE_JSON = JSON.parse(fs.readFileSync(PACKAGE_JSON_PATH, 'utf8'))
@@ -286,6 +289,13 @@ export async function start (opts) {
     }
   })
 
+  if (extensionModules) {
+    const appExtensions = Array.from(extensions).map((extension) => Object.values(extension.default.appExtensions)).flat().filter(Boolean)
+    for (let appExtension of appExtensions) {
+      appExtension.setup(app)
+    }
+  }
+
   app.use((req, res) => {
     res.status(404).send('404 Page not found')
   })
@@ -348,4 +358,17 @@ function getDb (username) {
   const publicUserDb = db.publicUserDbs.get(userId)
   if (!publicUserDb) throw new Error('User database not found')
   return publicUserDb
+}
+
+export {
+  testHelpers,
+  stringHelpers,
+  dbGetters,
+  api,
+  perf,
+  db,
+  issues,
+  email,
+  config,
+  getDb
 }
