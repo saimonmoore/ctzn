@@ -17,6 +17,7 @@ import * as os from 'os'
 import stringHelpers from './lib/strings.js'
 import * as dbGetters from './db/getters.js'
 import testHelpers from './tests/_util.js'
+import * as schemaHelpers from './lib/schemas.js'
 
 const { setOrigin, getDomain, parseAcctUrl, usernameToUserId, constructUserUrl, DEBUG_MODE_PORTS_MAP } = stringHelpers;
 
@@ -370,5 +371,6 @@ export {
   issues,
   email,
   config,
-  getDb
+  getDb,
+  schemaHelpers
 }
