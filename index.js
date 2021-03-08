@@ -14,10 +14,10 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { fileURLToPath } from 'url'
 import * as os from 'os'
-import stringHelpers from './lib/strings.js'
+import * as stringHelpers from './lib/strings.js'
 import * as dbGetters from './db/getters.js'
 import * as dbHelpers from './db/util.js'
-import testHelpers from './tests/_util.js'
+import * as testHelpers from './tests/_util.js'
 import * as schemaHelpers from './lib/schemas.js'
 import * as networkHelpers from './lib/network.js'
 import * as errors from './lib/errors.js'
@@ -50,7 +50,7 @@ export async function start (opts) {
   app.use(cors())
 
   //load extensions
-  const extensions = config.extensions.split(',') || [];
+  const extensions = config.extensions.split(',').filter(Boolean) || [];
   const extensionModules = await Promise.all(extensions.map(async (extension) => await import(extension)));
 
   // Extension needs to expose:
@@ -364,7 +364,7 @@ function getDb (username) {
   return publicUserDb
 }
 
-export {
+export default {
   testHelpers,
   stringHelpers,
   dbGetters,
@@ -373,7 +373,6 @@ export {
   db,
   issues,
   email,
-  config,
   getDb,
   dbHelpers,
   schemaHelpers,
